@@ -5,6 +5,13 @@ class SessionsController < Devise::SessionsController
 
   around_action :with_browser_locale
 
+  def new
+    force_sso = AccountConfig.find_by(account: Account.first, key: AccountConfig::FORCE_SSO_AUTH_KEY)&.value
+    redirect_to saml_auth_new_path, allow_other_host: false if force_sso
+
+    super
+  end
+
   def create
     email = sign_in_params[:email].to_s.downcase
 

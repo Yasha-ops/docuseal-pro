@@ -24,5 +24,15 @@ class Ability
     can :manage, WebhookUrl, account_id: user.account_id
 
     can :manage, :mcp
+
+    # Premium features enabled for self-hosted
+    can :manage, :saml_sso
+    can :manage, :bulk_send
+    can :manage, :countless
+    can :manage, :personalization_advanced
+    can :manage, :disable_decline
+    can :manage, :delegate_form
+    can :manage, :reply_to
+    can :manage, :tenants
   end
 end

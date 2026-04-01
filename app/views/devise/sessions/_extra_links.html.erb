@@ -1,1 +1,16 @@
-
+<% saml_config = EncryptedConfig.find_by(account: Account.first, key: 'saml_configs')&.value %>
+<% if saml_config&.fetch('idp_sso_target_url', nil).present? %>
+  <div class="divider my-2">or</div>
+  <%= link_to saml_auth_new_path, class: 'white-button w-full flex items-center justify-center space-x-2', data: { turbo: false } do %>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M15 7a2 2 0 1 1 4 0a2 2 0 0 1 -4 0"/>
+      <path d="M9 17a2 2 0 1 1 4 0a2 2 0 0 1 -4 0"/>
+      <path d="M3 7a2 2 0 1 1 4 0a2 2 0 0 1 -4 0"/>
+      <path d="M7 7h8"/>
+      <path d="M15 7a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2"/>
+      <path d="M9 15v-2a2 2 0 0 0 -2 -2h-2"/>
+    </svg>
+    <span>Sign in with SSO</span>
+  <% end %>
+<% end %>

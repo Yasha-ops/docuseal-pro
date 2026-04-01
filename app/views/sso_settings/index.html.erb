@@ -2,7 +2,84 @@
   <%= render 'shared/settings_nav' %>
   <div class="flex-grow max-w-xl mx-auto">
     <h1 class="text-4xl font-bold mb-4">SAML SSO</h1>
-    <%= render 'placeholder' %>
+
+    <% value = @encrypted_config.value || {} %>
+    <% force_sso = AccountConfig.find_by(account: current_account, key: AccountConfig::FORCE_SSO_AUTH_KEY)&.value %>
+
+    <%= form_for @encrypted_config, url: settings_sso_index_path, method: :post, html: { autocomplete: 'off', class: 'space-y-4' } do |f| %>
+      <%= f.fields_for :value do |ff| %>
+        <div class="form-control">
+          <%= ff.label :idp_sso_target_url, 'Identity Provider SSO URL', class: 'label' %>
+          <%= ff.url_field :idp_sso_target_url, value: value['idp_sso_target_url'], class: 'base-input', placeholder: 'https://your-idp.com/sso/saml' %>
+          <label class="label">
+            <span class="label-text-alt">The URL where your Identity Provider accepts SAML authentication requests.</span>
+          </label>
+        </div>
+
+        <div class="form-control">
+          <%= ff.label :idp_entity_id, 'Identity Provider Entity ID (Issuer)', class: 'label' %>
+          <%= ff.text_field :idp_entity_id, value: value['idp_entity_id'], class: 'base-input', placeholder: 'https://your-idp.com/entity' %>
+        </div>
+
+        <div class="form-control">
+          <%= ff.label :idp_cert, 'Identity Provider Certificate (X.509)', class: 'label' %>
+          <%= ff.text_area :idp_cert, value: value['idp_cert'], class: 'base-textarea font-mono text-xs', rows: 8, placeholder: "-----BEGIN CERTIFICATE-----\nMIIC...\n-----END CERTIFICATE-----" %>
+          <label class="label">
+            <span class="label-text-alt">Paste the X.509 certificate provided by your Identity Provider.</span>
+          </label>
+        </div>
+
+        <div class="form-control">
+          <%= ff.label :sp_entity_id, 'Service Provider Entity ID (optional)', class: 'label' %>
+          <%= ff.text_field :sp_entity_id, value: value['sp_entity_id'].presence || request.base_url, class: 'base-input' %>
+          <label class="label">
+            <span class="label-text-alt">The entity ID for this DocuSeal instance. Use your app URL if unsure.</span>
+          </label>
+        </div>
+
+        <div class="form-control">
+          <%= ff.label :name_identifier_format, 'Name Identifier Format', class: 'label' %>
+          <%= ff.select :name_identifier_format,
+                options_for_select([
+                  ['Email Address', 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'],
+                  ['Persistent', 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent'],
+                  ['Transient', 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'],
+                  ['Unspecified', 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified']
+                ], value.fetch('name_identifier_format', 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress')),
+                { prompt: false },
+                class: 'base-select' %>
+        </div>
+      <% end %>
+
+      <div class="divider my-2"></div>
+
+      <div class="flex items-center justify-between py-2.5">
+        <div>
+          <span class="font-medium">Force SSO Login</span>
+          <p class="text-sm text-base-content/60 mt-0.5">Require all users to authenticate via SSO. Password login will be disabled.</p>
+        </div>
+        <%= check_box_tag 'account_config[force_sso]', '1', force_sso, class: 'toggle' %>
+      </div>
+
+      <div class="divider my-2"></div>
+
+      <div class="bg-base-200 rounded-xl p-4 space-y-2 text-sm">
+        <p class="font-semibold">Service Provider (SP) Configuration</p>
+        <p class="text-base-content/70">Configure your Identity Provider with these values:</p>
+        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 mt-2">
+          <span class="font-medium">ACS URL:</span>
+          <code class="break-all"><%= "#{request.base_url}/auth/saml/callback" %></code>
+          <span class="font-medium">Entity ID:</span>
+          <code class="break-all"><%= @encrypted_config.value&.fetch('sp_entity_id', nil).presence || request.base_url %></code>
+          <span class="font-medium">Metadata URL:</span>
+          <code class="break-all"><%= "#{request.base_url}/auth/saml/metadata" %></code>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <%= f.submit t('save'), class: 'base-button' %>
+      </div>
+    <% end %>
   </div>
   <div class="w-0 md:w-52"></div>
 </div>

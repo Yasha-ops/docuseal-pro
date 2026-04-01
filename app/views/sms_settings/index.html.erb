@@ -2,7 +2,105 @@
   <%= render 'shared/settings_nav' %>
   <div class="flex-grow max-w-xl mx-auto">
     <h1 class="text-4xl font-bold mb-4">SMS</h1>
-    <%= render 'placeholder' %>
+
+    <% value = @encrypted_config.value || {} %>
+
+    <%= form_for @encrypted_config, url: settings_sms_index_path, method: :post, html: { autocomplete: 'off', class: 'space-y-4' } do |f| %>
+      <%= f.fields_for :value do |ff| %>
+
+        <div class="form-control">
+          <%= ff.label :provider, 'SMS Provider', class: 'label' %>
+          <%= ff.select :provider,
+                options_for_select([
+                  ['Twilio', 'twilio'],
+                  ['Vonage (Nexmo)', 'vonage'],
+                  ['Brevo (Sendinblue)', 'brevo']
+                ], value.fetch('provider', 'twilio')),
+                {},
+                class: 'base-select',
+                data: { action: 'change->provider-fields#toggle' } %>
+        </div>
+
+        <div class="divider my-1"></div>
+
+        <%# Twilio fields %>
+        <div data-provider="twilio" class="space-y-4 <%= 'hidden' unless value.fetch('provider', 'twilio') == 'twilio' %>">
+          <div class="form-control">
+            <%= ff.label :twilio_account_sid, 'Account SID', class: 'label' %>
+            <%= ff.text_field :twilio_account_sid, value: value['twilio_account_sid'], class: 'base-input', placeholder: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' %>
+          </div>
+          <div class="form-control">
+            <%= ff.label :twilio_auth_token, 'Auth Token', class: 'label' %>
+            <%= ff.password_field :twilio_auth_token, class: 'base-input',
+                  required: value['twilio_auth_token'].present?,
+                  placeholder: value['twilio_auth_token'].present? ? '*************' : '' %>
+          </div>
+          <div class="form-control">
+            <%= ff.label :twilio_phone_number, 'From Phone Number', class: 'label' %>
+            <%= ff.text_field :twilio_phone_number, value: value['twilio_phone_number'], class: 'base-input', placeholder: '+15551234567' %>
+            <label class="label">
+              <span class="label-text-alt">Must be a Twilio number in E.164 format.</span>
+            </label>
+          </div>
+        </div>
+
+        <%# Vonage fields %>
+        <div data-provider="vonage" class="space-y-4 <%= 'hidden' unless value['provider'] == 'vonage' %>">
+          <div class="form-control">
+            <%= ff.label :vonage_api_key, 'API Key', class: 'label' %>
+            <%= ff.text_field :vonage_api_key, value: value['vonage_api_key'], class: 'base-input' %>
+          </div>
+          <div class="form-control">
+            <%= ff.label :vonage_api_secret, 'API Secret', class: 'label' %>
+            <%= ff.password_field :vonage_api_secret, class: 'base-input',
+                  required: value['vonage_api_secret'].present?,
+                  placeholder: value['vonage_api_secret'].present? ? '*************' : '' %>
+          </div>
+          <div class="form-control">
+            <%= ff.label :vonage_from, 'From (Name or Number)', class: 'label' %>
+            <%= ff.text_field :vonage_from, value: value['vonage_from'], class: 'base-input', placeholder: 'DocuSeal' %>
+          </div>
+        </div>
+
+        <%# Brevo fields %>
+        <div data-provider="brevo" class="space-y-4 <%= 'hidden' unless value['provider'] == 'brevo' %>">
+          <div class="form-control">
+            <%= ff.label :brevo_api_key, 'API Key', class: 'label' %>
+            <%= ff.password_field :brevo_api_key, class: 'base-input',
+                  required: value['brevo_api_key'].present?,
+                  placeholder: value['brevo_api_key'].present? ? '*************' : '' %>
+          </div>
+          <div class="form-control">
+            <%= ff.label :brevo_sender, 'Sender Name or Number', class: 'label' %>
+            <%= ff.text_field :brevo_sender, value: value['brevo_sender'], class: 'base-input', placeholder: 'DocuSeal' %>
+          </div>
+        </div>
+
+        <div class="form-control">
+          <%= ff.label :message_template, 'Message Template (optional)', class: 'label' %>
+          <%= ff.text_area :message_template, value: value['message_template'], class: 'base-textarea', rows: 3,
+                placeholder: 'Please sign the document: {{link}}' %>
+          <label class="label">
+            <span class="label-text-alt">Use <code>{{link}}</code> for the signing link and <code>{{name}}</code> for the recipient name.</span>
+          </label>
+        </div>
+
+      <% end %>
+
+      <div class="flex justify-end pt-2">
+        <%= f.submit t('save'), class: 'base-button' %>
+      </div>
+    <% end %>
   </div>
   <div class="w-0 md:w-52"></div>
 </div>
+
+<script>
+  document.addEventListener('change', function(e) {
+    if (e.target.matches('select[name*="provider"]')) {
+      document.querySelectorAll('[data-provider]').forEach(function(el) {
+        el.classList.toggle('hidden', el.dataset.provider !== e.target.value);
+      });
+    }
+  });
+</script>

@@ -1,3 +1,18 @@
-<div class="form-control">
-  <%= render 'sms_settings/placeholder' %>
+<% sms_configured = EncryptedConfig.exists?(account: current_account, key: 'sms_configs') %>
+<div class="flex items-center justify-between py-2.5">
+  <div class="flex items-center space-x-1">
+    <span><%= t('send_sms') %></span>
+    <% unless sms_configured %>
+      <span class="tooltip tooltip-top flex cursor-pointer" data-tip="<%= t('sms_is_not_configured') rescue 'SMS not configured. Go to Settings → SMS.' %>">
+        <%= svg_icon('info_circle', class: 'w-4 h-4 text-warning') %>
+      </span>
+    <% end %>
+  </div>
+  <% if sms_configured %>
+    <submit-form data-on="change" class="flex">
+      <%= f.check_box :send_sms, class: 'toggle', checked: local_assigns[:checked] %>
+    </submit-form>
+  <% else %>
+    <a href="/settings/sms" class="badge badge-warning badge-sm whitespace-nowrap">Configure SMS</a>
+  <% end %>
 </div>

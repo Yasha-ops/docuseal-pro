@@ -35,6 +35,7 @@ gem 'rack'
 gem 'rails'
 gem 'rails-i18n'
 gem 'rotp'
+gem 'ruby-saml'
 gem 'rouge', require: false
 gem 'rqrcode', require: false
 gem 'ruby-vips'
