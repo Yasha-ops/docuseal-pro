@@ -95,6 +95,7 @@ Pro features in the official DocuSeal are gated via the CanCan permission system
 
 - **[lib/ability.rb](lib/ability.rb)** — All Pro permission symbols are granted to every authenticated user.
 - **[app/models/user.rb](app/models/user.rb)** — The `editor` and `viewer` roles are declared as constants.
+- **[app/views/templates/edit.html.erb](app/views/templates/edit.html.erb)** — `data-with-conditions`, `data-with-formula`, and `data-with-dynamic-documents` are set to `true` so the template builder enables conditional fields, formula fields, and dynamic documents (these are gated client-side via data attributes, not CanCan).
 - **Placeholder views** — All "Unlock with DocuSeal Pro" upgrade banners have been removed.
 - **Navbar** — The "Upgrade" button and "Pro" badge have been removed.
 
